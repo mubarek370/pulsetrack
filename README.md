@@ -1,5 +1,7 @@
 # PulseTrack — Full-Stack Fitness & Habit Tracker
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmubarek370%2Fpulsetrack&env=VITE_SUPABASE_URL,VITE_SUPABASE_ANON_KEY)
+
 PulseTrack is a modern, full-stack fitness and habit tracking web application built with **React 19**, **Tailwind CSS**, and **Supabase (PostgreSQL, Auth & Storage)**.
 
 ---
