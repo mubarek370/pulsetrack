@@ -62,7 +62,7 @@ export async function supabaseGetSessionUser() {
   }
 }
 
-export async function supabaseUpdateProfile(userId, { name, email, units, timezone, theme }) {
+export async function supabaseUpdateProfile(userId, { name, email, units, timezone, theme, avatar_url }) {
   if (!supabase) throw new Error('Supabase is not configured.')
 
   // Update auth metadata or email if changed
@@ -79,6 +79,7 @@ export async function supabaseUpdateProfile(userId, { name, email, units, timezo
   if (units !== undefined) updates.units = units
   if (timezone !== undefined) updates.timezone = timezone
   if (theme !== undefined) updates.theme = theme
+  if (avatar_url !== undefined) updates.avatar_url = avatar_url
 
   const { data, error } = await supabase
     .from('profiles')

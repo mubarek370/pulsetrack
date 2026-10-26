@@ -3,6 +3,7 @@ import { defaultProfile, heatmapData as mockHeatmapData } from '../data/mockData
 import { useAuth } from './AuthContext'
 import { useToast } from './ToastContext'
 import { isSupabaseConfigured } from '../lib/supabaseClient'
+import { todayKey } from '../utils/dates'
 import { supabaseUpdateProfile } from '../services/supabaseAuth'
 import {
   createHabitInDb,
@@ -186,20 +187,53 @@ export function AppProvider({ children }) {
         targetHabit = h
         const done = !h.completedToday
         const currentStreak = done ? h.currentStreak + 1 : Math.max(0, h.currentStreak - 1)
+        const baseCount = h.completedCount ?? Math.round(((h.completionRate || 0) / 100) * 30)
+        const newCompletedCount = Math.max(0, Math.min(30, baseCount + (done ? 1 : -1)))
+        const newCompletionRate = Math.round((newCompletedCount / 30) * 100)
         return {
           ...h,
           completedToday: done,
+          completedCount: newCompletedCount,
+          completionRate: newCompletionRate,
           currentStreak,
           longestStreak: Math.max(h.longestStreak, currentStreak),
         }
       }),
     )
 
+    const today = todayKey()
+    setHeatmap((prev) => {
+      const idx = prev.findIndex((d) => d.date === today)
+      if (idx === -1) return prev
+      const next = [...prev]
+      const delta = !targetHabit?.completedToday ? 1 : -1
+      next[idx] = {
+        ...next[idx],
+        count: Math.max(0, next[idx].count + delta),
+      }
+      return next
+    })
+
     if (isSupabaseConfigured && user?.id && targetHabit) {
       try {
         await toggleHabitLog(user.id, id, !targetHabit.completedToday)
       } catch (err) {
         console.error('Failed to sync habit toggle with Supabase:', err)
+        // Rollback state on error
+        setHabits((prev) =>
+          prev.map((h) => (h.id === id ? targetHabit : h))
+        )
+        setHeatmap((prev) => {
+          const idx = prev.findIndex((d) => d.date === today)
+          if (idx === -1) return prev
+          const next = [...prev]
+          const delta = !targetHabit.completedToday ? -1 : 1
+          next[idx] = {
+            ...next[idx],
+            count: Math.max(0, next[idx].count + delta),
+          }
+          return next
+        })
         addToast('Failed to save habit check-in. Please try again.', 'error')
       }
     }

@@ -80,7 +80,7 @@ export default function ActivityHeatmap({ data = [], loading = false }) {
                       <div
                         key={day.date}
                         title={`${day.count} ${day.count === 1 ? 'activity' : 'activities'} on ${formatDate(day.date, { month: 'short', day: 'numeric', year: 'numeric' })}`}
-                        className={`size-3 rounded-[3px] transition-transform duration-150 hover:scale-125 ${SHADES[day.count] ?? SHADES[0]}`}
+                        className={`size-3 rounded-[3px] transition-transform duration-150 hover:scale-125 ${SHADES[Math.min(day.count, SHADES.length - 1)]}`}
                       />
                     ) : (
                       <div key={`pad-${di}`} className="size-3" />

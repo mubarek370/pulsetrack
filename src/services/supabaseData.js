@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabaseClient'
-import { todayKey } from '../utils/dates'
+import { daysAgoKey, toDateKey, todayKey } from '../utils/dates'
 
 /**
  * Fetch all habits and their recent logs, computing completion rates and streaks.
@@ -44,11 +44,9 @@ export async function fetchUserHabits(userId) {
     let completedCount = 0
     let currentStreak = 0
 
-    // Look back up to 30 days
+    // Look back up to 30 days using consistent local date keys
     for (let i = 0; i < 30; i += 1) {
-      const d = new Date()
-      d.setDate(d.getDate() - i)
-      const dateStr = d.toISOString().slice(0, 10)
+      const dateStr = daysAgoKey(i)
       if (habitMap.get(dateStr)) {
         completedCount += 1
       }
@@ -59,7 +57,7 @@ export async function fetchUserHabits(userId) {
     if (!completedToday) {
       checkDate.setDate(checkDate.getDate() - 1)
     }
-    while (habitMap.get(checkDate.toISOString().slice(0, 10))) {
+    while (habitMap.get(toDateKey(checkDate))) {
       currentStreak += 1
       checkDate.setDate(checkDate.getDate() - 1)
     }
@@ -85,6 +83,7 @@ export async function fetchUserHabits(userId) {
       currentStreak,
       longestStreak,
       completionRate,
+      completedCount,
     }
   })
 }
@@ -116,6 +115,7 @@ export async function createHabitInDb(userId, { name, color, icon }) {
     currentStreak: 0,
     longestStreak: 0,
     completionRate: 0,
+    completedCount: 0,
   }
 }
 
@@ -274,9 +274,7 @@ export async function fetchHeatmapData(userId) {
 
   const days = []
   for (let i = 364; i >= 0; i -= 1) {
-    const d = new Date()
-    d.setDate(d.getDate() - i)
-    const dateStr = d.toISOString().slice(0, 10)
+    const dateStr = daysAgoKey(i)
     days.push({ date: dateStr, count: counts.get(dateStr) || 0 })
   }
   return days

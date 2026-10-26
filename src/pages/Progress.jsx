@@ -74,8 +74,8 @@ export default function Progress() {
       habits
         .filter((h) => !h.archived)
         .map((h) => ({
-          name: h.short ?? h.name.split(' ')[0],
-          rate: h.completionRate,
+          name: h.short ?? (h.name.length > 14 ? `${h.name.slice(0, 12)}…` : h.name),
+          rate: h.completionRate ?? 0,
           fill: HABIT_COLORS[h.color]?.hex ?? '#6366f1',
         })),
     [habits],
@@ -100,6 +100,7 @@ export default function Progress() {
               unit="%"
               yDomain={[0, 100]}
               ariaLabel="Bar chart of 30-day habit completion rate per habit"
+              showLabels
             />
           </ChartCard>
 
